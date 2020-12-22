@@ -1,6 +1,8 @@
 package Maze;
 
 import java.awt.*;
+import java.util.LinkedList;
+
 import javax.swing.*;
 
 /**
@@ -13,8 +15,8 @@ public class Board {
 	public final Dimension SCREEN_DIMENSIONS = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
 	private int PADDING = 100;
 
-	class BoardPanel extends JPanel {
-		private static final long serialVersionUID = 1L;
+	private class BoardPanel extends JPanel {
+		public static final long serialVersionUID = 1L;
 
 		public Map map;
 		public int nlines;
@@ -25,8 +27,6 @@ public class Board {
 			this.map = map;
 			this.nlines = map.getNlines();
 			this.ncols = map.getNcols();
-
-			System.out.println(SCREEN_DIMENSIONS);
 
 			// taille du cadre / proportionnelle au nombre de cases
 			int width = SCREEN_DIMENSIONS.width - PADDING;
@@ -49,13 +49,13 @@ public class Board {
 			Graphics2D g2 = (Graphics2D) g;
 
 			int posX, posY;
+			char cell;
 
 			for (int i = 0; i < nlines; i++) {
 				for (int j = 0; j < ncols; j++) {
 					posX = j * res;
 					posY = i * res;
-
-					char cell = map.getCase(i, j);
+					cell = map.getCase(i, j);
 
 					switch (cell) {
 					// Si case d'entree
@@ -79,20 +79,28 @@ public class Board {
 					// si case libre
 					default:
 						g2.setColor(Color.white);
-						g2.fillRect(posX, posY, res, res);
+						g2.fillRect(posX, posY, res, res);							
 						break;
-					}
+					} // switch
+
+//					// DEBUG
+//					g2.setColor(Color.pink);
+//					g2.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 8));
+//					g2.drawString(String.valueOf(num % ncols), posX, posY + 8);
 				} // j
-			} // j
+			} // i
+
 		}
 	}
 
-	JFrame frame; // fenetre
-	BoardPanel panel; // cadre pour le labyrinthe
-	Map map;
+	private JFrame frame; // fenetre
+	private BoardPanel panel; // cadre pour le labyrinthe
+	private Map map;
+	private Maze maze;
 
 	public Board(Map map) {
 		this.map = map;
+		this.maze = new Maze(map);
 
 		// creer le cadre
 		this.panel = new BoardPanel(map);

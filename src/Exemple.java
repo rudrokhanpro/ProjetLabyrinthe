@@ -2,9 +2,9 @@ import Maze.Map;;
 
 public class Exemple {
 	static String _map[] = {
-//			"D....",
-//			".....",
-//			"....S"
+//			"D#...",
+//			".#.#.",
+//			"...#S"
 			"D...................................................................................................",
 			"....................................................................................................",
 			"....................................................................................................",
@@ -59,6 +59,6 @@ public class Exemple {
 	static int map_width = _map[0].length();
 	static int map_height = _map.length;
 	static int start = 0;
-	static int end = (map_height * (map_height - 1)) + (map_width - 1);
+	static int end = (map_width * (map_height - 1)) + (map_width - 1);
 	static Map map = new Map(_map, map_height, map_width, start, end);
 }

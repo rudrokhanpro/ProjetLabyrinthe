@@ -24,11 +24,10 @@ public class Map {
 		this.map = map;
 		this.nlines = nlines;
 		this.ncols = ncols;
-		this.setStart(start);
+		this.start = start;
 		this.end = end;
 	}
-	
-	
+
 	/*********************************************************************
 	 * METHODES
 	 *********************************************************************/

@@ -40,7 +40,7 @@ public class Main {
 		int start = Map.UNKNOWN;
 		int end = Map.UNKNOWN;
 
-		System.out.println("CARTE ?");
+		System.out.println("CARTE ? (D = depart, S = sortie, # = mur, . = libre)");
 		for (int i = 0; i < nlines; i++) {
 			map[i] = sc.nextLine();
 
