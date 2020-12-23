@@ -10,6 +10,8 @@ import java.util.LinkedList;
 
 import javax.swing.JPanel;
 
+import Graph.GraphUtils;
+
 public class MazePanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 
@@ -111,9 +113,9 @@ public class MazePanel extends JPanel {
 				}
 
 //			// DEBUG
-//			g2.setColor(Color.white);
+//			g2.setColor(Color.red);
 //			g2.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 16));
-//			g2.drawString(String.valueOf(num), posX, posY + 16);
+//			g2.drawString(String.valueOf(GraphUtils.getDistance(num, end, map)), posX, posY + 16);
 			} // j
 		} // i
 	} // paint

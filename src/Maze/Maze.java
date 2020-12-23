@@ -46,9 +46,13 @@ public class Maze {
 	 * METHODES RELATIVES A LA RESOLUTION DU LABYRINTHE
 	 */
 	public void solve() {
-		dijkstra();
+//		dijkstra();
+		aStar();
 	}
 
+	/**
+	 * Recherche du chemin le plus court a l'aide de l'algorithme de Dijkstra
+	 */
 	private void dijkstra() {
 		HashMap<Integer, Double> cost = new HashMap<Integer, Double>();
 		HashMap<Integer, Boolean> visited = new HashMap<Integer, Boolean>();
@@ -75,8 +79,8 @@ public class Maze {
 		});
 
 		// initialisation
-		cost.put(start, 0.0);
-		q.add(start);
+		cost.put(this.start, 0.0);
+		q.add(this.start);
 
 		// tant qu'il y a des sommet a visiter
 		while (!q.isEmpty()) {
@@ -91,7 +95,7 @@ public class Maze {
 			}
 
 			// si on est arrive a la fin alors sortir
-			if (u == end)
+			if (u == this.end)
 				break;
 
 			// mise a jour de l'affichage
@@ -114,6 +118,107 @@ public class Maze {
 
 			// marquer ce sommet comme visite
 			visited.put(u, true);
+		}
+
+		// reconstitution du chemin, de la fin vers le debut
+		LinkedList<Integer> path = new LinkedList<Integer>();
+		int w = pred.get(end); // point de depart
+
+		while (w != Map.UNKNOWN) {
+			path.add(w);
+
+			w = pred.get(w);
+		}
+
+		// si chemin vide, alors pas de solution
+		if (path.isEmpty())
+			System.out.println("PAS DE SOLUTION");
+		else {
+			System.out.println("Chemin (de la fin vers le debut au debut):");
+			System.out.println(path);
+
+			this.panel.updatePath(path); // mise a jour de l'affichage
+		}
+
+		this.panel.updateCurrent(Map.UNKNOWN);
+	}
+
+	/**
+	 * Recherche du chemin le plus court optimise a l'aide de l'algorithme A* (A
+	 * Etoile) Heuristique: Distance par rapport a la sortie
+	 */
+	private void aStar() {
+		HashMap<Integer, Double> cost = new HashMap<Integer, Double>();
+		HashMap<Integer, Double> heuristic = new HashMap<Integer, Double>();
+		HashMap<Integer, Integer> pred = new HashMap<Integer, Integer>();
+		LinkedList<Integer> potentialPath = new LinkedList<Integer>();
+
+		// initialisation
+		for (int u : graph.getVertices().keySet()) {
+			cost.put(u, Double.POSITIVE_INFINITY);
+			heuristic.put(u, GraphUtils.getDistance(u, this.end, this.map)); // infini
+			pred.put(u, -1); // inconnu
+		}
+
+		// file prioritaire, retirant le sommet au cout minimal
+		PriorityQueue<Integer> q = new PriorityQueue<Integer>(new Comparator<Integer>() {
+
+			/**
+			 * Retourne le sommet possedant le cout total minimal, c'est a dire
+			 */
+			@Override
+			public int compare(Integer a, Integer b) {
+				double fCostA = cost.get(a) + heuristic.get(a);
+				double fCostB = cost.get(b) + heuristic.get(b);
+
+				return (int) (fCostA - fCostB);
+			}
+		});
+
+		// initialisation
+		cost.put(this.start, 0.0);
+		q.add(this.start);
+
+		boolean qContains;
+
+		// tant qu'il y a des sommet a visiter
+		while (!q.isEmpty()) {
+			// extraire de la file le sommet non visite et au cout minimal
+			int u = q.poll();
+
+			// ajout du sommet au potentiel chemin
+			potentialPath.add(u);
+
+			// si on est arrive a la fin alors sortir
+			if (u == end)
+				break;
+
+			// mise a jour de l'affichage
+			this.panel.updateCurrent(pred.get(u));
+			delay(DELAY);
+
+			// pour tout sommet adjacent
+			for (Edge e : this.graph.get(u).getAdjacencyList()) {
+				int v = e.getTo();
+
+				// si ce sommet ne fait pas partie du chemin
+				if (potentialPath.contains(v))
+					continue;
+
+				qContains = q.contains(v);
+
+				// si ce sommet n'est pas encore dans la file
+				// ou une distance plus courte a ete trouvee
+				if (!qContains || cost.get(u) + e.getWeight() < cost.get(v)) {
+					cost.put(v, cost.get(u) + e.getWeight());
+					pred.put(v, u);
+				} // if
+
+				// si pas encore dans la file
+				if (!qContains)
+					q.add(v);
+			} // for
+
 		}
 
 		// reconstitution du chemin, de la fin vers le debut
