@@ -17,10 +17,11 @@ public class MazePanel extends JPanel {
 
 	// Labyrinthe
 	private Map map; // carte du labyrinthe
-	private int start, end; // numero du sommet de depart et d'arrive
+	private int start, end, fire; // numero du sommet de depart et d'arrive
 	private int current = Map.UNKNOWN; // numero du sommet courant
-	LinkedList<Integer> path;
-	ArrayList<Integer> checked;
+	LinkedList<Integer> path; // chemin a suivre
+	ArrayList<Integer> checked; // cases visites
+	ArrayList<Integer> burning; // cases en feu
 
 	// Affichage
 	private int width, height, res; // largeur, hauteur, taille d'une case
@@ -32,8 +33,9 @@ public class MazePanel extends JPanel {
 		this.end = map.getEnd();
 		this.nlines = map.getNlines();
 		this.ncols = map.getNcols();
-		this.path = new LinkedList<Integer>();
-		this.checked = new ArrayList<Integer>();
+//		this.path = new LinkedList<Integer>();
+//		this.checked = new ArrayList<Integer>();
+//		this.burning = new ArrayList<Integer>();
 
 		// ajustement de la taille
 		this.width = MazeFrame.SCREEN.width - MazeFrame.PADDING;
@@ -60,6 +62,7 @@ public class MazePanel extends JPanel {
 		int num;
 		int posX, posY;
 		char cell;
+		int fontSize = res - (res / 8);
 
 		for (int i = 0; i < nlines; i++) {
 			for (int j = 0; j < ncols; j++) {
@@ -71,15 +74,20 @@ public class MazePanel extends JPanel {
 				switch (cell) {
 				// Si case d'entree
 				case Map.START:
-					g2.setColor(Color.red);
-					g2.fillRect(posX, posY, res, res);
-					break;
-
-				// si case de sortie
 				case Map.END:
-					g2.setColor(Color.green);
+					g2.setColor(Color.white);
 					g2.fillRect(posX, posY, res, res);
+
+					g2.setColor(Color.black);
+					g2.setFont(new Font(Font.MONOSPACED, Font.BOLD, fontSize));
+					g2.drawString(String.valueOf(cell), posX + fontSize / 4, posY + fontSize);
+
 					break;
+//				// si case de feu
+//				case Map.FIRE:
+//					g2.setColor(Color.orange);
+//					g2.fillRect(posX, posY, res, res);
+//					break;
 
 				// si mur
 				case Map.WALL:
@@ -94,22 +102,33 @@ public class MazePanel extends JPanel {
 					break;
 				} // switch
 
-				// sommets visites
-				if (checked.contains(num) && num != start && num != end) {
-					g2.setColor(Color.yellow);
-					g2.fillRect(posX, posY, res, res);
-				}
+				if (num != start && num != end) {
 
-				// chemin
-				if (path.contains(num) && num != start && num != end) {
-					g2.setColor(Color.magenta);
-					g2.fillRect(posX, posY, res, res);
-				}
+					// chemin
+					if (path != null && path.contains(num)) {
+						g2.setColor(Color.green);
+						g2.fillRect(posX, posY, res, res);
+					}
 
-				// case courante
-				if (current == num) {
-					g2.setColor(Color.magenta);
-					g2.fillRect(posX, posY, res, res);
+					// feu
+					if (burning != null && burning.contains(num)) {
+						g2.setColor(Color.red);
+						g2.fillRect(posX + (res / 8), posY + (res / 8), res - (res / 4), res - (res / 4));
+					}
+
+//					// DEBUG
+//					// sommets visites
+//					if (checked.contains(num)) {
+//						g2.setColor(Color.lightGray);
+//						g2.fillRect(posX, posY, res, res);
+//					}
+
+//					// DEBUG
+//					// case courante
+//					if (current == num) {
+//						g2.setColor(Color.green);
+//						g2.fillRect(posX, posY, res, res);
+//					}
 				}
 
 //			// DEBUG
@@ -125,11 +144,9 @@ public class MazePanel extends JPanel {
 	 * 
 	 * @param current
 	 */
-	public void updateCurrent(int current) {
+	public void setCurrent(int current) {
 		this.checked.add(current);
 		this.current = current;
-
-		repaint();
 	}
 
 	/**
@@ -137,9 +154,14 @@ public class MazePanel extends JPanel {
 	 * 
 	 * @param path
 	 */
-	public void updatePath(LinkedList<Integer> path) {
+	public void setPath(LinkedList<Integer> path) {
 		this.path = path;
+	}
 
-		repaint();
+	/**
+	 * 
+	 */
+	public void setBurning(ArrayList<Integer> burning) {
+		this.burning = burning;
 	}
 }

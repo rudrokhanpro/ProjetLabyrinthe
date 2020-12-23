@@ -12,6 +12,7 @@ public class Map {
 	public static final int UNKNOWN = -1;
 	public static final char START = 'D';
 	public static final char END = 'S';
+	public static final char FIRE = 'F';
 	public static final char WALL = '#';
 	
 	private String map[];
@@ -19,13 +20,15 @@ public class Map {
 	private int ncols = 0;
 	private int start = UNKNOWN;
 	private int end = UNKNOWN;
+	private int fire = UNKNOWN;
 
-	public Map(String map[], int nlines, int ncols, int start, int end) {
+	public Map(String map[], int nlines, int ncols, int start, int end, int fire) {
 		this.map = map;
 		this.nlines = nlines;
 		this.ncols = ncols;
 		this.start = start;
 		this.end = end;
+		this.fire = fire;
 	}
 
 	/*********************************************************************
@@ -107,4 +110,11 @@ public class Map {
 		this.end = end;
 	}
 
+	public int getFire() {
+		return fire;
+	}
+
+	public void setFire(int fire) {
+		this.fire = fire;
+	}
 }

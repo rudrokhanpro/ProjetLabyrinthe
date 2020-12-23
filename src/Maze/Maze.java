@@ -1,5 +1,6 @@
 package Maze;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -12,142 +13,79 @@ import Graph.GraphUtils;
 public class Maze {
 	// Labyrinthe
 	private Graph graph;
-	private int start, end;
+	private int start, end, fire;
 	private int current; // cellule actuelle
 	private Map map;
-	private int nlines, ncols;
-	private LinkedList<Integer> path;
+	private ArrayList<Integer> burning; // celulles incendie
 
 	// Affichage
 	private MazeFrame frame; // fenetre d'affichage
 	private MazePanel panel; // composant affichant le labyrinthe
-	private final int DELAY = 2;
+	private final int DELAY = 1000; // vitesse de l'animation
 
 	public Maze(Map map) {
 		this.map = map;
 		this.start = map.getStart();
 		this.end = map.getEnd();
+		this.fire = map.getFire();
 		this.current = Map.UNKNOWN;
-		this.nlines = map.getNlines();
-		this.ncols = map.getNcols();
-
-		// chemin recent
-		this.path = new LinkedList<Integer>();
 
 		// creation d'un graphe a partir d'une carte
 		this.graph = GraphUtils.fromMap(map);
 
+		// incendie
+		this.burning = new ArrayList<Integer>();
+
 		// initialisation de la fenetre d'affichage
 		this.frame = new MazeFrame();
-		this.panel = new MazePanel(map);
+		this.panel = new MazePanel(this.map);
 	}
 
 	/*
 	 * METHODES RELATIVES A LA RESOLUTION DU LABYRINTHE
 	 */
 	public void solve() {
-//		dijkstra();
-		aStar();
-	}
-
-	/**
-	 * Recherche du chemin le plus court a l'aide de l'algorithme de Dijkstra
-	 */
-	private void dijkstra() {
-		HashMap<Integer, Double> cost = new HashMap<Integer, Double>();
-		HashMap<Integer, Boolean> visited = new HashMap<Integer, Boolean>();
-		HashMap<Integer, Integer> pred = new HashMap<Integer, Integer>();
-
-		// initialisation
-		for (int u : graph.getVertices().keySet()) {
-			visited.put(u, false); // non visite
-			cost.put(u, Double.POSITIVE_INFINITY); // infini
-			pred.put(u, -1); // inconnu
-		}
-
-		// file prioritaire, retirant le sommet au cout minimal
-		PriorityQueue<Integer> q = new PriorityQueue<Integer>(new Comparator<Integer>() {
-			@Override
-			public int compare(Integer a, Integer b) {
-				if (cost.get(a) < cost.get(b))
-					return -1;
-				else if (cost.get(a) == cost.get(b))
-					return 0;
-				else
-					return 1;
-			}
-		});
-
-		// initialisation
-		cost.put(this.start, 0.0);
-		q.add(this.start);
-
-		// tant qu'il y a des sommet a visiter
-		while (!q.isEmpty()) {
-			// extraire de la file le sommet non visite et au cout minimal
-			int u = q.poll();
-			while (visited.get(u)) {
-				if (!q.isEmpty())
-					u = q.poll();
-				// si la file est vide alors sortir
-				else
-					break;
-			}
-
-			// si on est arrive a la fin alors sortir
-			if (u == this.end)
-				break;
-
-			// mise a jour de l'affichage
-			this.panel.updateCurrent(u);
-			delay(DELAY);
-
-			// pour tout sommet adjacent
-			for (Edge e : graph.get(u).getAdjacencyList()) {
-				int v = e.getTo();
-
-				// relachement
-				if (!visited.get(v)) {
-					if (cost.get(u) + e.getWeight() < cost.get(v)) {
-						cost.put(v, cost.get(u) + e.getWeight());
-						pred.put(v, u);
-					}
-					q.add(v);
-				} // if
-			} // for
-
-			// marquer ce sommet comme visite
-			visited.put(u, true);
-		}
-
-		// reconstitution du chemin, de la fin vers le debut
-		LinkedList<Integer> path = new LinkedList<Integer>();
-		int w = pred.get(end); // point de depart
-
-		while (w != Map.UNKNOWN) {
-			path.add(w);
-
-			w = pred.get(w);
-		}
+		LinkedList<Integer> path = aStar();
 
 		// si chemin vide, alors pas de solution
 		if (path.isEmpty())
 			System.out.println("PAS DE SOLUTION");
+
+		// sinon animer le chemin et l'incendie
 		else {
-			System.out.println("Chemin (de la fin vers le debut au debut):");
-			System.out.println(path);
+			// Chemin incomplet qui sera complete a chaque tour de bouble
+			LinkedList<Integer> stepedPath = new LinkedList<Integer>();
 
-			this.panel.updatePath(path); // mise a jour de l'affichage
+			// Animation du labyrinthe
+			for (int u : path) {
+				this.current = u;
+
+				// demarrer le feu apres le depart de la 1ere case
+				if (u != this.start)
+					burnAround();
+
+				if (!this.burning.contains(this.current)) {
+					stepedPath.add(u);
+					this.panel.setPath(stepedPath); // mise a jour de l'affichage
+//					this.panel.setCurrent(Map.UNKNOWN); // DEBUG
+					this.panel.setBurning(burning); // mise a jour des celulles en feu
+					this.panel.repaint();
+
+					delay();
+				} else {
+					System.out.println("Vous avez ete pris par les feux");
+					break;
+				}
+			}
+
 		}
-
-		this.panel.updateCurrent(Map.UNKNOWN);
 	}
 
 	/**
 	 * Recherche du chemin le plus court optimise a l'aide de l'algorithme A* (A
 	 * Etoile) Heuristique: Distance par rapport a la sortie
 	 */
-	private void aStar() {
+	private LinkedList<Integer> aStar() {
 		HashMap<Integer, Double> cost = new HashMap<Integer, Double>();
 		HashMap<Integer, Double> heuristic = new HashMap<Integer, Double>();
 		HashMap<Integer, Integer> pred = new HashMap<Integer, Integer>();
@@ -181,6 +119,9 @@ public class Maze {
 
 		boolean qContains;
 
+		this.burning.add(this.fire);
+
+		// RECHERCHE DU CHEMIN
 		// tant qu'il y a des sommet a visiter
 		while (!q.isEmpty()) {
 			// extraire de la file le sommet non visite et au cout minimal
@@ -192,10 +133,6 @@ public class Maze {
 			// si on est arrive a la fin alors sortir
 			if (u == end)
 				break;
-
-			// mise a jour de l'affichage
-			this.panel.updateCurrent(pred.get(u));
-			delay(DELAY);
 
 			// pour tout sommet adjacent
 			for (Edge e : this.graph.get(u).getAdjacencyList()) {
@@ -225,23 +162,33 @@ public class Maze {
 		LinkedList<Integer> path = new LinkedList<Integer>();
 		int w = pred.get(end); // point de depart
 
+		// retracage du parcours
 		while (w != Map.UNKNOWN) {
-			path.add(w);
+			path.addFirst(w);
 
 			w = pred.get(w);
 		}
 
-		// si chemin vide, alors pas de solution
-		if (path.isEmpty())
-			System.out.println("PAS DE SOLUTION");
-		else {
-			System.out.println("Chemin (de la fin vers le debut au debut):");
-			System.out.println(path);
+		return path;
 
-			this.panel.updatePath(path); // mise a jour de l'affichage
-		}
+//		this.panel.setCurrent(Map.UNKNOWN);
+	}
 
-		this.panel.updateCurrent(Map.UNKNOWN);
+	private void burnAround() {
+		int v;
+
+		ArrayList<Integer> _burning = new ArrayList<Integer>(burning); // copie
+
+		// pour tous les sommet en feu
+		for (int u : _burning) {
+			for (Edge e : this.graph.get(u).getAdjacencyList()) {
+				v = e.getTo();
+
+				// mettre le feu au celulles pas encore en feu
+				if (!burning.contains(v))
+					this.burning.add(v);
+			} // for e
+		} // for _burning
 	}
 
 	/*
@@ -259,9 +206,9 @@ public class Maze {
 	 * 
 	 * @param ms
 	 */
-	private void delay(int ms) {
+	private void delay() {
 		try {
-			Thread.sleep(ms);
+			Thread.sleep(DELAY);
 		}
 
 		// en cas d'interruption (tres rare, sans consequences grave);
