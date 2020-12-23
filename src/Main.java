@@ -45,6 +45,7 @@ public class Main {
 		String map[] = new String[nlines];
 		int start = Map.UNKNOWN;
 		int end = Map.UNKNOWN;
+		int fire = Map.UNKNOWN;
 
 		System.out.println("CARTE ? (D = depart, S = sortie, # = mur, . = libre)");
 		for (int i = 0; i < nlines; i++) {
@@ -59,6 +60,11 @@ public class Main {
 			if (map[i].indexOf(Map.END) != Map.UNKNOWN) {
 				end = i * ncols + map[i].indexOf(Map.END);
 			}
+			
+			// recherche du feu
+			if (map[i].indexOf(Map.FIRE) != Map.UNKNOWN) {
+				fire = i * ncols + map[i].indexOf(Map.FIRE);
+			}
 		}
 
 //		// DEBUG
@@ -66,6 +72,6 @@ public class Main {
 //		System.out.println("Start = " + start + ", End = " + end);
 
 		// creation d'une classe map
-		return new Map(map, nlines, ncols, start, end);
+		return new Map(map, nlines, ncols, start, end, fire);
 	}
 }

@@ -21,7 +21,7 @@ public class Maze {
 	// Affichage
 	private MazeFrame frame; // fenetre d'affichage
 	private MazePanel panel; // composant affichant le labyrinthe
-	private final int DELAY = 1000; // vitesse de l'animation
+	private final int DELAY = 100; // vitesse de l'animation
 
 	public Maze(Map map) {
 		this.map = map;
@@ -56,6 +56,10 @@ public class Maze {
 			// Chemin incomplet qui sera complete a chaque tour de bouble
 			LinkedList<Integer> stepedPath = new LinkedList<Integer>();
 
+			try {
+				Thread.sleep(5000);
+			} catch (InterruptedException e) {}
+			
 			// Animation du labyrinthe
 			for (int u : path) {
 				this.current = u;

@@ -6,10 +6,8 @@ public class GraphUtils {
 	/**
 	 * Retourne un graphe a partir d'une carte de labyrithe.
 	 * 
-	 * Proprietes:
-	 * - 4 Voisins possible dans l'ordre suivant: HAUT, DROITE, BAS, GAUCHE
-	 * - Le mur ne sont ignores
-	 * - La distance entre chaque voisin est de 1. 
+	 * Proprietes: - 4 Voisins possible dans l'ordre suivant: HAUT, DROITE, BAS,
+	 * GAUCHE - Le mur ne sont ignores - La distance entre chaque voisin est de 1.
 	 * 
 	 * @param map
 	 * @return
@@ -81,6 +79,7 @@ public class GraphUtils {
 
 	/**
 	 * Affiche la liste d'adjacence d'un sommet dans un graphe
+	 * 
 	 * @param g Graphe
 	 * @param n Sommet a etudier
 	 */
@@ -100,5 +99,14 @@ public class GraphUtils {
 			System.out.println("\t" + e.getFrom() + " ==[" + e.getWeight() + "]==> " + e.getTo());
 		}
 		System.out.println();
+	}
+
+	public static Double getDistance(int a, int b, Map map) {
+		int aY = a / map.getNcols();
+		int aX = a % map.getNcols();
+		int bY = b / map.getNcols();
+		int bX = b / map.getNcols();
+
+		return (double) (Math.abs(aX - bX) + Math.abs(aY - bY));
 	}
 }
