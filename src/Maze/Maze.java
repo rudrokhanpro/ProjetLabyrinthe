@@ -55,10 +55,6 @@ public class Maze {
 		else {
 			// Chemin incomplet qui sera complete a chaque tour de bouble
 			LinkedList<Integer> stepedPath = new LinkedList<Integer>();
-
-			try {
-				Thread.sleep(5000);
-			} catch (InterruptedException e) {}
 			
 			// Animation du labyrinthe
 			for (int u : path) {
