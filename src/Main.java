@@ -1,7 +1,7 @@
-import java.util.*;
+import java.util.Scanner;
 
 import Maze.Map;
-import Maze.Board;
+import Maze.Maze;
 
 public class Main {
 	static Scanner sc;
@@ -13,10 +13,16 @@ public class Main {
 		Map map = readMap();
 
 		// afficher le labyrinthe
-		Board board = new Board(map);
+		Maze maze = new Maze(map);
 		
 //		// DEBUG
-//		Board board = new Board(Exemple.map);
+//		Maze maze = new Maze(Exemple.map);
+		
+		// afficher le labyrinthe
+		maze.show();
+		
+		// resoudre le labyrinthe
+		maze.solve();
 		
 		sc.close();
 	}
