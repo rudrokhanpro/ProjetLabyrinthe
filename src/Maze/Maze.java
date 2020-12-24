@@ -16,7 +16,9 @@ public class Maze {
 	private int start, end, fire;
 	private int current; // cellule actuelle
 	private Map map;
+	private LinkedList<Integer> path;
 	private ArrayList<Integer> burning; // celulles incendie
+	private boolean hasEscape;
 
 	// Affichage
 	private MazeFrame frame; // fenetre d'affichage
@@ -29,6 +31,8 @@ public class Maze {
 		this.end = map.getEnd();
 		this.fire = map.getFire();
 		this.current = Map.UNKNOWN;
+		this.path = new LinkedList<Integer>();
+		this.hasEscape = false;
 
 		// creation d'un graphe a partir d'une carte
 		this.graph = GraphUtils.fromMap(map);
@@ -45,38 +49,44 @@ public class Maze {
 	 * METHODES RELATIVES A LA RESOLUTION DU LABYRINTHE
 	 */
 	public void solve() {
-		LinkedList<Integer> path = aStar();
+		this.path = aStar();
 
 		// si chemin vide, alors pas de solution
-		if (path.isEmpty())
+		if (this.path.isEmpty())
 			System.out.println("PAS DE SOLUTION");
 
 		// sinon animer le chemin et l'incendie
 		else {
 			// Chemin incomplet qui sera complete a chaque tour de bouble
 			LinkedList<Integer> stepedPath = new LinkedList<Integer>();
-			
+
+			// supposition de reussite
+			this.hasEscape = true;
+
 			// Animation du labyrinthe
 			for (int u : path) {
 				this.current = u;
 
 				// demarrer le feu apres le depart de la 1ere case
-				if (u != this.start)
+				if (u != this.start) {
 					burnAround();
+					stepedPath.add(u);					
+				}
 
-				if (!this.burning.contains(this.current)) {
-					stepedPath.add(u);
-					this.panel.setPath(stepedPath); // mise a jour de l'affichage
+				this.panel.setPath(stepedPath); // mise a jour de l'affichage
 //					this.panel.setCurrent(Map.UNKNOWN); // DEBUG
-					this.panel.setBurning(burning); // mise a jour des celulles en feu
-					this.panel.repaint();
+				this.panel.setBurning(burning); // mise a jour des celulles en feu
+				this.panel.repaint();
+				delay();
 
-					delay();
-				} else {
-					System.out.println("Vous avez ete pris par les feux");
+				if (this.burning.contains(this.current)) {
+					System.out.println("VOUS AVEZ ETET RATRAPPE PAR LE FEU");
+
+					// pas de d'echapatoir
+					this.hasEscape = false;
 					break;
 				}
-			}
+			} // for
 
 		}
 	}
@@ -95,7 +105,7 @@ public class Maze {
 		for (int u : graph.getVertices().keySet()) {
 			cost.put(u, Double.POSITIVE_INFINITY);
 			heuristic.put(u, GraphUtils.getDistance(u, this.end, this.map)); // infini
-			pred.put(u, -1); // inconnu
+			pred.put(u, Map.UNKNOWN); // inconnu
 		}
 
 		// file prioritaire, retirant le sommet au cout minimal
@@ -214,5 +224,96 @@ public class Maze {
 		// en cas d'interruption (tres rare, sans consequences grave);
 		catch (InterruptedException e) {
 		}
+	}
+
+	/*
+	 * GETTERS & SETTERS
+	 */
+	public Graph getGraph() {
+		return graph;
+	}
+
+	public void setGraph(Graph graph) {
+		this.graph = graph;
+	}
+
+	public int getStart() {
+		return start;
+	}
+
+	public void setStart(int start) {
+		this.start = start;
+	}
+
+	public int getEnd() {
+		return end;
+	}
+
+	public void setEnd(int end) {
+		this.end = end;
+	}
+
+	public int getFire() {
+		return fire;
+	}
+
+	public void setFire(int fire) {
+		this.fire = fire;
+	}
+
+	public int getCurrent() {
+		return current;
+	}
+
+	public void setCurrent(int current) {
+		this.current = current;
+	}
+
+	public Map getMap() {
+		return map;
+	}
+
+	public void setMap(Map map) {
+		this.map = map;
+	}
+
+	public LinkedList<Integer> getPath() {
+		return path;
+	}
+
+	public void setPath(LinkedList<Integer> path) {
+		this.path = path;
+	}
+
+	public ArrayList<Integer> getBurning() {
+		return burning;
+	}
+
+	public void setBurning(ArrayList<Integer> burning) {
+		this.burning = burning;
+	}
+
+	public boolean getHasEscape() {
+		return hasEscape;
+	}
+
+	public void setHasEscape(boolean hasEscape) {
+		this.hasEscape = hasEscape;
+	}
+
+	public MazeFrame getFrame() {
+		return frame;
+	}
+
+	public void setFrame(MazeFrame frame) {
+		this.frame = frame;
+	}
+
+	public MazePanel getPanel() {
+		return panel;
+	}
+
+	public void setPanel(MazePanel panel) {
+		this.panel = panel;
 	}
 }
